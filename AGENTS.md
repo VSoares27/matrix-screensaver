@@ -41,6 +41,3 @@ Docs: https://docs.expo.dev/eas/index.md
 - Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
 
 
-Students:
-- Victor Leonardo Soares de Souza
-- José Diego Nunes Bezerra

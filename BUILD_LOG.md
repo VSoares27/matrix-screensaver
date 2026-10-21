@@ -1,103 +1,123 @@
 # 🛠️ BUILD LOG — Matrix Screensaver
 
-> **Data de Geração:** 21 de Outubro de 2026  
-> **Versão da Base:** 1.0.0  
+> **Estudantes:**  
+> - Victor Leonardo Soares de Souza  
+> - José Diego Nunes Bezerra  
+>  
+> **Data de Atualização:** 21 de Outubro de 2026  
+> **Versão:** 1.0.0  
 > **Stack:** Expo SDK 57 | React Native 0.86.3 | React 19.2.3 | TypeScript 6.0 | Shopify Skia 2.6.2  
 
 ---
 
-## 1. 📋 Visão Geral do Projeto
+## 1. 🎯 Prompt / Request
 
-O **Matrix Screensaver** é uma aplicação móvel imersiva projetada para funcionar como um protetor de tela e dock station cyberpunk de alta fidelidade. O objetivo principal do projeto foi recriar a clássica chuva de código digital inspirada no utilitário de terminal **CMatrix**, com suporte a **60-120 FPS cravados**, sem engasgos ou sobrecarga da CPU móvel, acompanhado de um painel de monitoramento de sistema (HUD) com telemetria em tempo real.
-
----
-
-## 2. 🧱 Arquitetura e Componentes Desenvolvidos
-
-### 2.1. Motor Gráfico — `src/MatrixRain.tsx`
-O coração do protetor de tela. Substituiu a abordagem ingênua baseada em Views do React por renderização direta em **Canvas 2D via GPU** utilizando `@shopify/react-native-skia`.
-
-* **Renderização Direta na GPU:** Elimina a criação de centenas de nós na árvore do Virtual DOM do React Native, desenhando os caracteres diretamente pelo Skia (`<Canvas />`, `<Text />`).
-* **Loop VSync Dinâmico:** Implementado via `requestAnimationFrame` acoplado ao `performance.now()`, com controle delta de tempo e cadência de tick fixa (`CMATRIX_TICK_MS = 25ms`), eliminando o efeito de câmera lenta e garantindo suavidade.
-* **Fidelidade CMatrix Clássica:**
-  * **Cabeça luminosa:** Caractere da ponta desenhado em branco brilhante (`#FFFFFF`).
-  * **Gradiente de decaimento:** 4 tonalidades de verde fluorescente a escuro (`#00FF00`, `#00CC00`, `#007700`, `#003300`).
-  * **Mutações ativas:** 25% de chance por tick de alterar aleatoriamente os glifos que já estão caindo no rastro.
-  * **Comprimentos e velocidades variáveis:** Trilhas de 12 a 22 caracteres, com cadência (`stepDelay`) independente por coluna.
-  * **Pré-aquecimento de tela:** Todas as colunas são inicializadas com posições verticais aleatórias, preenchendo a tela instantaneamente ao abrir o app (sem tela preta inicial).
-* **Alinhamento Tipográfico:** Ajuste preciso da baseline (`FONT_SIZE * 0.85`) e fonte nativa monospaçada (`monospace` no Android / `Courier` no iOS).
-
-### 2.2. HUD Cyberpunk & Telemetria — `src/MatrixHUD.tsx`
-Painel central flutuante que exibe relógio e telemetria de hardware no estilo terminal futurista.
-
-* **Relógio & Data:** Horário digital 24h (`HH:mm:ss`) e calendário formatado com dia da semana (`DOM, SEG, TER...`).
-* **Telemetria de Hardware:**
-  * **RAM:** Monitoramento dinâmico da memória heap do JavaScript (`performance.memory.usedJSHeapSize`).
-  * **CPU & GPU:** Indicadores simulados de carga de hardware com oscilação orgânica (10-14% CPU, 22-28% GPU).
-  * **Display:** Indicação de taxa de atualização (120Hz).
-* **Otimização de Desempenho:**
-  * Ciclo de atualização isolado em 1 segundo (`setInterval(..., 1000)`), garantindo que as mudanças de estado do HUD não disputem frames com o loop de 120 FPS do Skia.
-  * Uso de `pointerEvents="none"` para não interceptar eventos de toque.
-  * Remoção de filtros de sombra pesados (`shadowRadius` / `elevation`) para manter o consumo de bateria e fill-rate baixos.
-
-### 2.3. Orquestrador e Modo Imersivo — `App.tsx`
-Configuração de nível de aplicativo para experiência autêntica de screensaver:
-
-* **Prevenção de Suspensão de Tela:** Integração com `expo-keep-awake` (`useKeepAwake()`) para manter a tela continuamente ligada enquanto o app estiver aberto.
-* **Modo Imersivo Android:** Ocultação da barra de navegação virtual (`NavigationBar.setVisibilityAsync('hidden')`) com suporte automático a barras transitórias por gesto (`BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE`).
-* **Barra de Notificações Oculta:** `StatusBar hidden` configurado para remover relógio e ícones de bateria padrão do sistema operacional.
-
-### 2.4. Compilador e Configuração — `babel.config.js` & `app.json`
-* Criação de `babel.config.js` configurado com `babel-preset-expo` e o plugin `react-native-reanimated/plugin` para suporte a worklets e animações nativas.
-* Configuração do plugin `expo-status-bar` no `app.json`.
+* **Objetivo Inicial:** Construir uma aplicação mobile imersiva em Expo/React Native simulando um protetor de tela (screensaver) e estação dock com a clássica chuva de código digital inspirada no utilitário de terminal **CMatrix**.
+* **Requisitos Funcionais e Visuais:**
+  * Renderização fluida em alta taxa de atualização (**60 a 120 FPS**) sem engasgos ou sobrecarga da CPU móvel.
+  * Efeito visual fiel ao CMatrix: cabeça da trilha em destaque branco puro, gradiente de verde, mutações aleatórias de caracteres em tempo real e tela já inicializada completamente preenchida.
+  * Painel flutuante estilo HUD Cyberpunk com relógio digital 24h, calendário e telemetria de hardware (RAM, CPU, GPU e taxa de atualização do display).
+  * Modo imersivo total: manter o display do celular sempre aceso (sem suspensão automática) e ocultar barras de navegação e de status do sistema operacional.
+* **Solicitação de Documentação:** Elaborar e estruturar o `BUILD_LOG.md` documentando detalhadamente as etapas de engenharia, decisões, problemas encontrados e soluções aplicadas.
 
 ---
 
-## 3. 📦 Dependências Adicionadas
+## 2. 🧠 Decision Summary
 
-| Pacote | Versão | Propósito |
-| :--- | :--- | :--- |
-| `@shopify/react-native-skia` | `2.6.2` | Motor gráfico 2D de altíssima performance acelerado por GPU |
-| `react-native-reanimated` | `4.5.1` | Suporte a worklets de animação nativa na UI thread |
-| `expo-keep-awake` | `~57.0.2` | Trava o display contra desligamento/timeout automático |
-| `expo-navigation-bar` | `~57.0.3` | Controle do modo imersivo da barra inferior do Android |
-| `expo-status-bar` | `~57.0.1` | Ocultação da barra de notificações e relógio do SO |
-
----
-
-## 4. 🗂️ Registro Detalhado de Arquivos Modificados / Criados
-
-| Arquivo | Estado | Descrição das Modificações |
-| :--- | :---: | :--- |
-| [`src/MatrixRain.tsx`](file:///home/v/Documentos/Projects/matrix-screensaver/src/MatrixRain.tsx) | **Criado** | Motor de partículas e chuva digital Matrix no Skia Canvas |
-| [`src/MatrixHUD.tsx`](file:///home/v/Documentos/Projects/matrix-screensaver/src/MatrixHUD.tsx) | **Criado** | Componente do HUD central com relógio e estatísticas de memória |
-| [`App.tsx`](file:///home/v/Documentos/Projects/matrix-screensaver/App.tsx) | **Modificado** | Integração dos componentes, keep-awake e modo imersivo do Android |
-| [`babel.config.js`](file:///home/v/Documentos/Projects/matrix-screensaver/babel.config.js) | **Criado** | Configuração do preset Expo e plugin do Reanimated |
-| [`app.json`](file:///home/v/Documentos/Projects/matrix-screensaver/app.json) | **Modificado** | Registro do plugin `expo-status-bar` |
-| [`package.json`](file:///home/v/Documentos/Projects/matrix-screensaver/package.json) | **Modificado** | Inclusão das dependências Skia, Reanimated e módulos Expo |
-| [`BUILD_LOG.md`](file:///home/v/Documentos/Projects/matrix-screensaver/BUILD_LOG.md) | **Criado** | Documentação completa do build, arquitetura e decisões de projeto |
+* **Renderização Gráfica via GPU (Shopify Skia):**
+  * *Decisão:* Descartar a renderização por componentes convencionais do React Native (`<View>`, `<Text>`). Centenas de caracteres caindo simultaneamente gerariam milhares de nós no Virtual DOM e sobrecarregariam a bridge nativa.
+  * *Escolha:* Adoção de `@shopify/react-native-skia` para renderizar os glifos diretamente em um `<Canvas />` acelerado por hardware via Skia 2D na GPU.
+* **Ciclo de Animação com Delta Timing:**
+  * *Decisão:* Controlar o avanço dos caracteres por delta de tempo (`performance.now()`) e cadência de tick fixa (`CMATRIX_TICK_MS = 25ms`) dentro de um loop de `requestAnimationFrame`.
+  * *Motivo:* Evita o efeito de "câmera lenta" ou velocidade errática em dispositivos com taxas de atualização diferentes (60Hz vs 90Hz vs 120Hz).
+* **Desacoplamento de Estados e Mutação em `useRef`:**
+  * *Decisão:* Armazenar todo o estado das colunas (posições, caracteres, velocidades e comprimentos) em referências mutáveis (`useRef`), disparando atualizações mínimas na tela sem recriar objetos ou arrays a cada frame.
+* **Isolamento de Ciclos do HUD:**
+  * *Decisão:* Isolar o componente [`src/MatrixHUD.tsx`](file:///home/v/Documentos/Projects/matrix-screensaver/src/MatrixHUD.tsx) com um intervalo fixo de 1 segundo (`setInterval(..., 1000)`).
+  * *Motivo:* Garantir que as atualizações de estado do relógio e telemetria não disputem ciclos de renderização nem forcem re-renders no canvas gráfico do Skia.
+* **Prevenção de Suspensão e Modo Imersivo Nativo:**
+  * *Decisão:* Utilizar `expo-keep-awake` (`useKeepAwake()`) e `expo-navigation-bar` para ocultar os elementos de interface do Android e manter o app operando continuamente como protetor de tela.
 
 ---
 
-## 5. ⚡ Verificações de Qualidade e Compilação
+## 3. ⚙️ Actions Performed
 
-* **TypeScript Typecheck:** `npx tsc --noEmit` executado com **sucesso (0 erros)**.
-* **Compatibilidade Expo SDK 57:**
-  * Atualização da chamada do `expo-navigation-bar` para a API moderna do SDK 57 (remoção do método descontinuado `setBehaviorAsync`).
-  * Utilização correta de `StyleSheet.absoluteFill` e `globalThis` para tipagem estrita no React Native 0.86+.
+* **Configuração de Dependências & Ambiente:**
+  * Adicionados pacotes compatíveis com Expo SDK 57:
+    * `@shopify/react-native-skia` (2.6.2)
+    * `react-native-reanimated` (4.5.1)
+    * `expo-keep-awake` (~57.0.2)
+    * `expo-navigation-bar` (~57.0.3)
+    * `expo-status-bar` (~57.0.1)
+    * `babel-preset-expo` (~57.0.0)
+  * Configurado [`babel.config.js`](file:///home/v/Documentos/Projects/matrix-screensaver/babel.config.js) com `react-native-reanimated/plugin` para suporte a worklets.
+  * Configurado [`app.json`](file:///home/v/Documentos/Projects/matrix-screensaver/app.json) com o plugin `expo-status-bar`.
+
+* **Desenvolvimento do Motor Gráfico — [`src/MatrixRain.tsx`](file:///home/v/Documentos/Projects/matrix-screensaver/src/MatrixRain.tsx):**
+  * Definido o conjunto autêntico de glifos alfanuméricos e caracteres de terminal (`MATRIX_CHARS`).
+  * Implementado grid proporcional à largura da tela e tamanho de fonte monospaçada (`FONT_SIZE = 16`, baseline `0.85 * FONT_SIZE`).
+  * Desenvolvido loop VSync nativo via `requestAnimationFrame` com passo de 25ms.
+  * Construída a paleta de cores característica:
+    * Ponta brilhante: `#FFFFFF`
+    * Nível primário: `#00FF00`
+    * Nível intermediário: `#00CC00`
+    * Nível escuro: `#007700`
+    * Cauda desvanecendo: `#003300`
+  * Implementada rotina de mutação ativa (25% de probabilidade de trocar caracteres no rastro dinamicamente).
+  * Pré-aquecimento da tela: colunas inicializadas com linhas aleatórias para evitar tela preta no primeiro frame.
+
+* **Desenvolvimento do Monitor de Sistema — [`src/MatrixHUD.tsx`](file:///home/v/Documentos/Projects/matrix-screensaver/src/MatrixHUD.tsx):**
+  * Relógio digital em destaque (`44px`, negrito, fonte monospace).
+  * Data formatada com dia da semana em português (`DOM, SEG, TER...`).
+  * Leitor do Heap de memória do JavaScript (`performance.memory.usedJSHeapSize`).
+  * Telemetria simulada de CPU (10-14%), GPU (22-28%) e indicador fixo de 120Hz.
+  * Estilização translúcida `rgba(0, 10, 0, 0.82)` com borda neon verde e sobreposição via `pointerEvents="none"`.
+
+* **Integração no App Principal — [`App.tsx`](file:///home/v/Documentos/Projects/matrix-screensaver/App.tsx):**
+  * Invocação de `useKeepAwake()` para manter a tela ligada.
+  * Configuração assíncrona do modo imersivo via `NavigationBar.setVisibilityAsync('hidden')`.
+  * Ocultação da barra de status via `<StatusBar hidden style="light" />`.
 
 ---
 
-## 6. 🚀 Como Executar
+## 4. 📊 Result
 
-```bash
-# Iniciar o servidor de desenvolvimento do Expo
-npx expo start
+* **Desempenho Estável:** Efeito de chuva de código executando com suavidade total na GPU via Skia, sem gargalo no bridge do React Native.
+* **Estética Autêntica:** Reprodução fidedigna do terminal CMatrix com cabeças pulsantes, desvanecimento gradual e mutação dinâmica de glifos.
+* **HUD Integrado e Não Intrusivo:** Monitor futurista perfeitamente posicionado sobre o canvas, sem causar quedas de quadros.
+* **Experiência de Screensaver Real:** Celular permanece com a tela ligada sem apagar e com área útil completa (barras do sistema ocultadas).
+* **Conformidade de Código:** Typecheck do TypeScript executado com **0 erros** (`npx tsc --noEmit`).
 
-# Executar diretamente no dispositivo Android
-npx expo start --android
+---
 
-# Validação de tipos TypeScript
-npx tsc --noEmit
-```
+## 5. ⚠️ Problems / Errors
+
+1. **Incompatibilidade de API no `expo-navigation-bar` (Expo SDK 57):**
+   * *Erro:* `App.tsx:19 - error TS2339: Property 'setBehaviorAsync' does not exist on type 'typeof NavigationBar'`.
+   * *Causa:* No Expo SDK 57, os métodos `setBehaviorAsync`, `setBackgroundColorAsync` e similares foram removidos da biblioteca `expo-navigation-bar`.
+2. **Referência Global Inválida no TypeScript (`global` vs `globalThis`):**
+   * *Erro:* `src/MatrixHUD.tsx:30 - error TS2304: Cannot find name 'global'`.
+   * *Causa:* O identificador `global` não está tipado no ambiente de tipos estritos do navegador/React Native moderno sem `@types/node`.
+3. **Propriedade Depreciada no StyleSheet:**
+   * *Erro:* `src/MatrixHUD.tsx:102 - error TS2551: Property 'absoluteFillObject' does not exist on type 'typeof StyleSheet'. Did you mean 'absoluteFill'?`.
+   * *Causa:* No React Native 0.86+, a convenção padrão para preenchimento absoluto de tela é `StyleSheet.absoluteFill`.
+4. **Risco de Queda de Desempenho / Câmera Lenta no Canvas:**
+   * *Erro Potencial:* A primeira abordagem com timers tradicionais em React Native sofria com variações de frame rate e câmera lenta dependendo do throttling do JavaScript.
+
+---
+
+## 6. 🔧 Fixes Attempted
+
+1. **Correção do `expo-navigation-bar`:**
+   * *Tentativa:* Remoção da chamada descontinuada `NavigationBar.setBehaviorAsync('overlay-swipe')`.
+   * *Resultado:* No SDK 57, a camada nativa em Kotlin já configura automaticamente `systemBarsBehavior = BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE` ao chamar `setVisibilityAsync('hidden')`. O erro de compilação foi sanado e o comportamento de swipe transitório permaneceu garantido.
+2. **Correção de Escopo Global para Leitura de Memória:**
+   * *Tentativa:* Substituição de `(global as any).performance` por `(globalThis as any).performance`.
+   * *Resultado:* Resolvido o erro `TS2304` com suporte universal padrão ECMAScript tanto em desenvolvimento quanto em produção.
+3. **Ajuste de Estilo de Tela Cheia:**
+   * *Tentativa:* Substituição de `...StyleSheet.absoluteFillObject` por `...StyleSheet.absoluteFill`.
+   * *Resultado:* Resolvido o erro `TS2551` com tipagem 100% estrita em conformidade com o React Native 0.86+.
+4. **Otimização do Loop Gráfico:**
+   * *Tentativa:* Utilização de `requestAnimationFrame` com delta acumulado e constante de cadência (`CMATRIX_TICK_MS = 25ms`).
+   * *Resultado:* Cadência de queda rápida, dinâmica e independente de oscilações na taxa de atualização do hardware.
 
